@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="../Common/MV.js"></script>
+<script type="text/javascript" src="../Common/webgl-utils.js"></script>
+<script type="text/javascript" src="../Common/initShaders.js"></script>
+<script type="text/javascript" src="triangle.js"></script>
+<script id="vertex-shader" type="x-shader/x-vertex">
+attribute vec4 vPosition;
+varying vec4 fcolor;
+uniform float theta;
+uniform mat4 viewMatrix;
+void
+main()
+{
+	gl_Position=vPosition*viewMatrix;
+	gl_PointSize=1.0;
+	fcolor=vec4((0.5+vPosition.xyz),1.0);
+	
+}
+</script>
+
+<script id="fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+varying vec4 fcolor;
+void
+main()
+{
+    gl_FragColor = fcolor;
+	
+}
+</script>
+
+
+<script type="text/javascript">
+function dealChange(){
+	points=[];
+	step = document.getElementById( "step" ).value;
+	step = parseInt(step);
+	document.getElementById( "stepv" ).innerText = step;
+	
+	deal();
+	gl.bufferData( gl.ARRAY_BUFFER, flatten(points), gl.STATIC_DRAW );
+	render();
+	
+	document.getElementById("Xdegreev").innerText = document.getElementById("Xdegree").value;
+	document.getElementById("Ydegreev").innerText = document.getElementById("Ydegree").value;
+	document.getElementById("Zdegreev").innerText = document.getElementById("Zdegree").value;
+}
+</script>
+</head>
+
+<body>
+<canvas id="gl-canvas" width="512" height="512">
+Oops ... your browser doesn't support the HTML5 canvas element
+</canvas>
+<br></br>
+片元大小
+<input id="step" type="range" min="5" max="20" step="1" value="5" onchange="dealChange()" />
+<span id="stepv">5</span>
+<br></br>
+X旋转
+<input id="Xdegree" type="range" min="0" max="360" step="0.1" value="0" onchange="dealChange()" />
+<span id="Xdegreev">0</span>
+<br></br>
+Y旋转
+<input id="Ydegree" type="range" min="0" max="360" step="0.1" value="0" onchange="dealChange()" />
+<span id="Ydegreev">0</span>
+<br></br>
+Z旋转
+<input id="Zdegree" type="range" min="0" max="360" step="0.1" value="0" onchange="dealChange()" />
+<span id="Zdegreev">0</span>
+</body>
+</html>
