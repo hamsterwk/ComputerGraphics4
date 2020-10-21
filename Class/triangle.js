@@ -2,7 +2,7 @@
 
 var canvas;
 var gl;
-var points = [],colors=[],textureCoordData=[]; 
+var points = [],colors=[],indices=[]; 
 var renderDepth;
 var renderType;
 var vertices,baseColors;
@@ -28,25 +28,35 @@ window.onload = function init()
 	render();
 };
 
-function Orb(i,j,Radius){
+function Sphere(i,j,Radius){
 	var x=Math.cos(j/360*Math.PI*2)*Math.cos(i/360*Math.PI*2)*Radius;
 	var y=Math.cos(j/360*Math.PI*2)*Math.sin(i/360*Math.PI*2)*Radius;
 	var z=Math.sin(j/360*Math.PI*2)*Radius;
 	return vec3(x,y,z);
 }
 
+function idx(x,y){
+	if(x>360)x-=360;
+	if(y>90)y-=90;
+	var index=(x/step)*(180/step+1)+(y+90)/step;
+	//console.log(x,y,index);
+	return index;
+}
 
 function deal(){
 	var Radius=0.8;
-	for(var i=0;i<360;i+=step){//经度
-		for(var j=-90;j<90;j+=step){//纬度
-
-			points.push(Orb(i,j,Radius));
-			points.push(Orb(i+step,j,Radius));
-			points.push(Orb(i+step,j+step,Radius));
-			points.push(Orb(i,j,Radius));
-			points.push(Orb(i,j+step,Radius));
-			points.push(Orb(i+step,j+step,Radius));
+	for(var i=0;i<=360;i+=step){//经度
+		for(var j=-90;j<=90;j+=step){//纬度
+			points.push(Sphere(i,j,Radius));
+		}
+	}
+	
+	for(var i=0;i<=360;i+=step){
+		for(var j=-90;j<=90;j+=step){
+			var A=idx(i,j),B=idx(i+step,j),C=idx(i+step,j+step),D=idx(i,j+step);
+			indices.push(vec3(A,B,C));
+			indices.push(vec3(A,D,C));
+			
 		}
 	}
 }
@@ -76,6 +86,12 @@ function render(){
 	gl.vertexAttribPointer( vcolor, 3, gl.FLOAT, false, 0,0 );
 	gl.enableVertexAttribArray( vcolor );*/
 	
+
+	var squareIndexBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, squareIndexBuffer);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(flatten(indices)), gl.STATIC_DRAW);
+
+	
 	Xdegree=document.getElementById( "Xdegree" ).value;
 	Ydegree=document.getElementById( "Ydegree" ).value;
 	Zdegree=document.getElementById( "Zdegree" ).value;
@@ -83,5 +99,5 @@ function render(){
 	var vmat = mult(mult(rotateX(Xdegree),rotateY(Ydegree)),rotateZ(Zdegree) );
 	gl.uniformMatrix4fv(viewMatrix,false,flatten(vmat));
 	
-	gl.drawArrays( gl.TRIANGLES, 0, points.length );
+	gl.drawElements( gl.TRIANGLES, indices.length*3, gl.UNSIGNED_SHORT,0);
 }
